@@ -22,6 +22,12 @@
 			display: inline-block;
 		}
 
+		.playerHead{
+			background: #42f4e2;
+			position: absolute;
+			display: inline-block;
+		}
+
 		.food{
 			background: #000000;
 			position: absolute;
@@ -71,8 +77,8 @@
 		var score = 0;
 		var money = 0;
 
-		var gameLimit = 2;
-		var bonusLimit = 3;
+		var gameLimit = 10;
+		var bonusLimit = 20;
 
 		var snakeBS = 25;
 		var gameBoardHeight = 20;
@@ -187,7 +193,7 @@
 				player.positionsY = [];
 
 
-			playerBlock = $("<div>", {"class": "player"});
+			playerBlock = $("<div>", {"class": "playerHead"});
 			playerX = gameBoardWidth/2;
 			playerY = gameBoardHeight/2;
 			playerBlock.css({"top": ((gameBoardHeight/2)*snakeBS) + "px", "left": (gameBoardWidth/2*snakeBS) + "px", "height" : snakeBS + "px", "width" : snakeBS + "px"});
@@ -304,7 +310,7 @@
 
 
 
-			playerBlock = $("<div>", {"class": "player"});
+			playerBlock = $("<div>", {"class": "playerHead"});
 			playerX = gameBoardWidth/2;
 			playerY = gameBoardHeight/2;
 			playerBlock.css({"top": ((gameBoardHeight/2)*snakeBS) + "px", "left": (gameBoardWidth/2*snakeBS) + "px", "height" : snakeBS + "px", "width" : snakeBS + "px"});
