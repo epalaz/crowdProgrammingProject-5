@@ -66,9 +66,9 @@
 
 
 		var scoreText = $("#score");
-		var pause = false;
+		var pause = true;
 		//classic snake game
-		var speed = 250;
+		var speed = 1000;
 		//0 -> right
 		//1 -> up
 		//2 -> left
@@ -409,7 +409,18 @@
 
 
 			//need to find a function to randomly generate game board
-		});
+			
+		$.getJSON("//codingthecrowd.com/counter.php", {key: "yucinSnake", data: {localship: direction, active: pause}})
+     		 .done(function(json) {
+          	console.log(json);
+     	  })      
+      		.fail(function(jqxhr, textStatus, error) {
+         	 var err = textStatus + ", " + error;
+         	 console.log( "Request Failed: " + err );
+  			});
+			
+
+			});
 
 		function snakeMove(direction){
 			//0 -> right
