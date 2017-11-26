@@ -408,19 +408,58 @@
 		}, speed);
 
 
-			//need to find a function to randomly generate game board
+			//multiplayer code
+			var ready = playerReadyCheck();
+			if(ready){
+				StartTheGame();
+			}
 			
-		$.getJSON("//codingthecrowd.com/counter.php", {key: "yucinSnake", data: {localship: direction, active: pause}})
+
+			});
+
+		function playerReadyCheck(){
+			$.getJSON("https://codingthecrowd.com/counter.php", {key: "yucinSnake", data: direction + pause.toString()})
      		 .done(function(json) {
-          	console.log(json);
+     		console.log(json);
+          	var length = json.results.length;
+          	var allPlayersPause = true;
+          	for(var i = 0; i < length; i++){
+          		if(json.results[i].data.length == 6){
+          			allPlayersPause = false;
+          			console.log("A player is Playing");
+          		}
+          	}
+          	//var obj = JSON.parse(json);
+          	//console.log(obj.results[0]);
+
+          	if(length == 2 && allPlayersPause){
+          		//can start playing the game otherwise should wait for more players
+          		return true;
+          	}else {
+          		return false;
+          	}
      	  })      
       		.fail(function(jqxhr, textStatus, error) {
          	 var err = textStatus + ", " + error;
          	 console.log( "Request Failed: " + err );
   			});
-			
+		}
 
-			});
+		function StartTheGame(){
+			$.getJSON("https://codingthecrowd.com/counter.php", {key: "yucinSnake", data: direction + pause.toString()})
+     		 .done(function(json) {
+     		 	var time = json.time;
+     		 	var count = 10 - time%10;
+     		 	console.log("Time until start is" + count + " seconds");
+          		setTimeout(function(){
+          			pause = false;
+          		}, 1000 * count);
+     	  })      
+      		.fail(function(jqxhr, textStatus, error) {
+         	 var err = textStatus + ", " + error;
+         	 console.log( "Request Failed: " + err );
+  			});
+		}
 
 		function snakeMove(direction){
 			//0 -> right
