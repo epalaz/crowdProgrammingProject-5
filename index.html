@@ -130,6 +130,8 @@
 		var tryAgain = false;
 		var readyToSubmit = false;
 
+		var readyToStart = false;
+
 		function resetGame(){
 			score = 0;
 			direction = 0;
@@ -409,10 +411,8 @@
 		}, speed);
 
 			//multiplayer code
-			var ready = playerReadyCheck();
-			if(ready){
-				StartTheGame();
-			}
+			playerReadyCheck();
+			
 			
 
 			});
@@ -429,15 +429,23 @@
           			console.log("A player is Playing");
           		}
           	}
+          	console.log("all players pause: " + allPlayersPause);
+          	console.log("length: " + length);
           	//var obj = JSON.parse(json);
           	//console.log(obj.results[0]);
 
           	if(length == 2 && allPlayersPause){
           		//can start playing the game otherwise should wait for more players
-          		return true;
+          		readyToStart =  true;
           	}else {
-          		return false;
+          		readyToStart = false;
           	}
+
+          	console.log("Ready: " + readyToStart);
+			if(readyToStart){
+				console.log("starting the game");
+				StartTheGame();
+			}
      	  })      
       		.fail(function(jqxhr, textStatus, error) {
          	 var err = textStatus + ", " + error;
