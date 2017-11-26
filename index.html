@@ -335,6 +335,10 @@
 			//1 -> up
 			//2 -> left
 			//3 -> down
+				var ready = playerReadyCheck();
+				if(ready){
+					StartTheGame();
+				}
 				if(!pause){
 					var posX = playerBlock.position().left;
 					var posY = playerBlock.position().top;
