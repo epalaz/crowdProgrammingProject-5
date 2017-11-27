@@ -418,7 +418,10 @@
 			});
 
 		function playerReadyCheck(){
-			$.getJSON("https://codingthecrowd.com/counter.php", {key: "yucinSnake", data: direction + pause.toString()})
+			$.getJSON({url:"https://codingthecrowd.com/counter.php",
+				datatype: "jsonp",
+				data: {key: "yucinSnake", data: direction + pause.toString()},
+			})
      		 .done(function(json) {
      		console.log(json);
           	var length = json.results.length;
@@ -451,6 +454,7 @@
          	 var err = textStatus + ", " + error;
          	 console.log( "Request Failed: " + err );
   			});
+
 		}
 
 		function StartTheGame(){
