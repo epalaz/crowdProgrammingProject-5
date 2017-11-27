@@ -418,7 +418,7 @@
 			});
 
 		function playerReadyCheck(){
-			$.getJSON({url:"https://codingthecrowd.com/counter.php",
+			$.ajax({url:"https://codingthecrowd.com/counter.php",
 				datatype: "jsonp",
 				data: {key: "yucinSnake", data: direction + pause.toString()},
 			})
