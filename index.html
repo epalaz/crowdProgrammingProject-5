@@ -412,7 +412,8 @@
 
 			//multiplayer code
 			playerReadyCheck();
-			
+			playerReadyCheck();
+			playerReadyCheck();
 			
 
 			});
@@ -447,7 +448,7 @@
           	console.log("Ready: " + readyToStart);
 			if(readyToStart){
 				console.log("starting the game");
-				StartTheGame();
+				//StartTheGame();
 			}
      	  })      
       		.fail(function(jqxhr, textStatus, error) {
@@ -458,7 +459,10 @@
 		}
 
 		function StartTheGame(){
-			$.getJSON("https://codingthecrowd.com/counter.php", {key: "yucinSnake", data: direction + pause.toString()})
+			$.ajax({url:"https://codingthecrowd.com/counter.php",
+				dataType: "jsonp",
+				data: {key: "yucinSnake", data: direction + pause.toString()},
+			})
      		 .done(function(json) {
      		 	var time = json.time;
      		 	var count = 10 - time%10;
