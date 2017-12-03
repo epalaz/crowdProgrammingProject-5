@@ -1,48 +1,29 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<style type="text/css">
-		.block{
-			background: #f44182;
-			position: absolute;
-			display: inline-block;
-		}
-
-		.gameBackground{
-			position: absolute;
-			top: 200px;
-			left: 150px;
-			background: #a09b9d;
-		}
-
-		.player{
-			background: #4286f4;
-			position: absolute;
-			display: inline-block;
-		}
-
-		.playerHead{
-			background: #42f4e2;
-			position: absolute;
-			display: inline-block;
-		}
-
-		.food{
-			background: #000000;
-			position: absolute;
-		}
-
-		.gameOverText{
-			position: absolute;
-   			bottom: 15px;
-   			text-align: center;
-   			width: 100%;
-		}
-
-	</style>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 	
-	<!-- <script type="text/javascript">
+		var mykey = "enes";
+
+		
+
+		// var myInterval = setInterval(function(){$.ajax({
+  //           url:"https://codingthecrowd.com/counter.php",
+  //           dataType: "jsonp",
+  //           data: {key: mykey, data: local_ship_position},
+  //       })
+  //       .done(function(json) {
+  //           // do something with the response
+  //           console.log(json);
+ 
+  //           // var allinputs = jason["results"];
+  //           // for(var i=0; i<allinputs.length; i++)  {
+  //           //  console.log(allinputs[i]["sid"]);
+  //           // }
+           
+  //       })      
+  //       .fail(function(jqxhr, textStatus, error) {
+  //             var err = textStatus + ", " + error;
+  //             console.log( "Request Failed: " + err );
+  //       });
+  //   }, 100);
+
 		//form related stuff
 		var form_selector = "#mturk_form";
 
@@ -61,17 +42,19 @@
 		var scoreText = $("#score");
 		var pause = true;
 		//classic snake game
-		var speed = 1000;
+		var speed = 2000;
 		//0 -> right
 		//1 -> up
 		//2 -> left
 		//3 -> down
-		var direction = 0;
+		var direction = 3;
+		var lastDirection = 3;
+		var averageDirection = 3;
 		var score = 0;
 		var money = 0;
 
-		var gameLimit = 10;
-		var bonusLimit = 20;
+		var gameLimit = 5;
+		var bonusLimit = 10;
 
 		var snakeBS = 25;
 		var gameBoardHeight = 20;
@@ -111,7 +94,7 @@
 		var food2GridX;
 		var food2GridY;
 
-		var multipleFood = true;
+		var multipleFood = false;
 
 		var grow = false;
 
@@ -125,9 +108,14 @@
 
 		var readyToStart = false;
 
+		var foodXList = [37,13,18,20,37,26,21,25,16,7,2];
+		var foodYList = [9,4,13,2,19,5,14,5,10,13,19];
+		var foodCount = 0;
+
 		function resetGame(){
-			score = 0;
-			direction = 0;
+			score = 3;
+			direction = 3;
+			prevDirection = 3;
 
 			obstacleGrid[food1GridY][food1GridX] = 0;
 			obstacleGrid[food2GridY][food2GridX] = 0;
@@ -209,7 +197,78 @@
 			}
 		});
 
+		var reqTimer = setInterval(function(){ 
+			//alert("Hello");
+			$.ajax({
+            url:"https://codingthecrowd.com/counter.php",
+            dataType: "jsonp",
+            data: {key: mykey, data: direction.toString() + pause.toString()},
+        })
+        .done(function(json) {
+            // do something with the response
+            //console.log(json);
+ 			var count = json.count;
+ 			var results = json.results;
+ 			var everbodyPaused = true;
+ 			for(var i = 0; i < results.count; i++){
+ 				if(results[i].length == 6){
+ 					everbodyPaused = false;
+ 				}
+ 			}
+ 			if(count >= 2 && everbodyPaused && pause && !readyToStart){
+ 				readyToStart = true;
+ 				console.log("game starting");
+ 				console.log(json.time);
+ 				gameStartCount(json.time);
+ 			}else if(!pause){
+ 				//game is being played by the players
+ 				var directions = [0,0,0,0];
+ 				for(var k = 0; k < json.count; k++){
+ 					directions[parseInt(json.results[k].data[0])]++;
+ 				}
+ 				
+ 				 //averageDirection = 0;
+ 				for(var j = 0; j < 4; j++){
+ 					if(directions[averageDirection] < directions[j]){
+ 						averageDirection = j;
+ 					}
+ 				}
+ 				//console.log(averageDirection);
+ 			}
+            // var allinputs = jason["results"];
+            // for(var i=0; i<allinputs.length; i++)  {
+            //  console.log(allinputs[i]["sid"]);
+            // }
+
+
+           
+        })      
+        .fail(function(jqxhr, textStatus, error) {
+              var err = textStatus + ", " + error;
+              console.log( "Request Failed: " + err );
+        });
+		}, 150);
+
+		function gameStartCount(time){
+			var remaining = 10 - (time % 10);
+			console.log("remaining seconds: " + remaining);
+			gameStart(remaining);
+		}
+
+		function gameStart(seconds){
+			setTimeout(function(){pause = false;
+				StartTheMovement();
+			}, seconds*1000);
+		}
+		// $(document).ready(function() {
+
+        
+   
+		// })
+
 		$(document).ready(function () {
+            
+
 			if((aid = gup("assignmentId"))!="" && $(form_selector).length>0) {
 
 		    // If the HIT hasn't been accepted yet, disabled the form fields.
@@ -260,12 +319,17 @@
 				var posY;
 
 				while(!found){
-					posX = Math.floor(Math.random() * gameBoardWidth);
-					posY = Math.floor(Math.random() * gameBoardHeight);
+					// posX = Math.floor(Math.random() * gameBoardWidth);
+					// posY = Math.floor(Math.random() * gameBoardHeight);
+					posX = foodXList[foodCount];
+					posY = foodYList[foodCount];
+					foodCount++;
+
 
 
 
 					if(obstacleGrid[posY][posX] == 0){
+
 						found = true;
 						obstacleGrid[posY][posX] = 2;
 						food1GridX = posX;
@@ -314,7 +378,7 @@
 			player.positionsX.push(playerX);
 			player.positionsY.push(playerY);
 			$("#gameBoard").append(playerBlock);
-
+			});
 			//Experimental second snake block
 			//var playerBlock2 = $("<div>", {"class": "player"});
 			//playerX = gameBoardWidth/2;
@@ -325,6 +389,7 @@
 			//$("#gameBoard").append(playerBlock2);
 
 			//Movement function will be copied for every elements
+			function StartTheMovement(){
 			myTimer = setInterval(function(){
 			//0 -> right
 			//1 -> up
@@ -347,7 +412,7 @@
 						player.positionsY.push(lastElementY/snakeBS);
 						$("#gameBoard").append(newTail);
 					}
-					if(direction == 0){
+					if(averageDirection == 0){
 						playerX++;
 						player.positionsX[0] = playerX;
 						player.positionsY[0] = playerY;
@@ -355,7 +420,7 @@
 							//playerBlock.css("left", (posX + snakeBS) + "px");
 							snakeMove(0);
 						}
-					}else if(direction == 1){
+					}else if(averageDirection == 1){
 						playerY--;
 						player.positionsX[0] = playerX;
 						player.positionsY[0] = playerY;
@@ -363,7 +428,7 @@
 							//playerBlock.css("top", (posY - snakeBS) + "px");
 							snakeMove(1);
 						}
-					}else if(direction == 2){
+					}else if(averageDirection == 2){
 						playerX--;
 						player.positionsX[0] = playerX;
 						player.positionsY[0] = playerY;
@@ -371,7 +436,7 @@
 							//playerBlock.css("left", (posX - snakeBS) + "px");
 							snakeMove(2);
 						}
-					}else if(direction == 3){
+					}else if(averageDirection == 3){
 						playerY++;
 						player.positionsX[0] = playerX;
 						player.positionsY[0] = playerY;
@@ -402,83 +467,29 @@
 					}
 				}
 		}, speed);
+		}
+
 
 			//multiplayer code
-			playerReadyCheck();
-			playerReadyCheck();
-			playerReadyCheck();
+			// playerReadyCheck();
+			// playerReadyCheck();
+			// playerReadyCheck();
+			
+			//myTimer.
+			// myTimer2 = setInterval(function(){
+			// 	//playerReadyCheck();
+			// 	//console.log(document.cookie);
+			// }, 100);
 			
 
-			myTimer2 = setInterval(function(){
-				//playerReadyCheck();
-				//console.log(document.cookie);
-			}, 100);
-			});
 
-		function playerReadyCheck(){
-			$.ajax({url:"https://codingthecrowd.com/counter.php",
-				datatype: "jsonp",
-				data: {key: "yucinSnake", data: direction + pause.toString()},
-			})
-     		 .done(function(json) {
-     		console.log(json);
-          	var length = json.results.length;
-          	var allPlayersPause = true;
-          	for(var i = 0; i < length; i++){
-          		if(json.results[i].data.length == 6){
-          			allPlayersPause = false;
-          			console.log("A player is Playing");
-          		}
-          	}
-          	console.log("all players pause: " + allPlayersPause);
-          	console.log("length: " + length);
-          	//var obj = JSON.parse(json);
-          	//console.log(obj.results[0]);
-
-          	if(length == 2 && allPlayersPause){
-          		//can start playing the game otherwise should wait for more players
-          		readyToStart =  true;
-          	}else {
-          		readyToStart = false;
-          	}
-
-          	console.log("Ready: " + readyToStart);
-			if(readyToStart){
-				console.log("starting the game");
-				//StartTheGame();
-			}
-     	  })      
-      		.fail(function(jqxhr, textStatus, error) {
-         	 var err = textStatus + ", " + error;
-         	 console.log( "Request Failed: " + err );
-  			});
-
-		}
-
-		function StartTheGame(){
-			$.ajax({url:"https://codingthecrowd.com/counter.php",
-				dataType: "jsonp",
-				data: {key: "yucinSnake", data: direction + pause.toString()},
-			})
-     		 .done(function(json) {
-     		 	var time = json.time;
-     		 	var count = 10 - time%10;
-     		 	console.log("Time until start is" + count + " seconds");
-          		setTimeout(function(){
-          			pause = false;
-          		}, 1000 * count);
-     	  })      
-      		.fail(function(jqxhr, textStatus, error) {
-         	 var err = textStatus + ", " + error;
-         	 console.log( "Request Failed: " + err );
-  			});
-		}
-
-		function snakeMove(direction){
+		function snakeMove(directionL){
 			//0 -> right
 			//1 -> up
 			//2 -> left
 			//3 -> down
+			lastDirection = directionL;
+			player.directions[0] = directionL;
 			for(var i = 0; i < player.parts.length; i++){
 				var posX = player.parts[i].position().left;
 				var posY = player.parts[i].position().top;
@@ -581,9 +592,11 @@
 				var posY;
 
 				while(!found){
-					posX = Math.floor(Math.random() * gameBoardWidth);
-					posY = Math.floor(Math.random() * gameBoardHeight);
-
+					// posX = Math.floor(Math.random() * gameBoardWidth);
+					// posY = Math.floor(Math.random() * gameBoardHeight);
+					posX = foodXList[foodCount];
+					posY = foodYList[foodCount];
+					foodCount++;
 
 
 					if(obstacleGrid[posY][posX] == 0){
@@ -620,48 +633,48 @@
 		$(document).keydown(function(e) {
    			switch(e.which) {
        		case 37: // left
-       		if(direction == 1){
+       		if(lastDirection == 1){
        			direction = 2;
-       			player.directions[0] = direction;
+       			//player.directions[0] = direction;
        		}
-       		if(direction == 3){
+       		if(lastDirection == 3){
        			direction = 2;
-       			player.directions[0] = direction;
+       			//player.directions[0] = direction;
        		}
        		break;
 
        		case 38: // up
-       		if(direction == 2){
+       		if(lastDirection == 2){
        			direction = 1;
-       			player.directions[0] = direction;
+       			//player.directions[0] = direction;
        		}
-       		if(direction == 0){
+       		if(lastDirection == 0){
        			direction = 1;
-       			player.directions[0] = direction;
+       			//player.directions[0] = direction;
        		}
         	break;
 
         	case 39: // right
-       		if(direction == 1){
+       		if(lastDirection == 1){
        			direction = 0;
-       			player.directions[0] = direction;
+       			//player.directions[0] = direction;
        		}
-       		if(direction == 3){
+       		if(lastDirection == 3){
        			direction = 0;
-       			player.directions[0] = direction;
+       			//player.directions[0] = direction;
        		}
         	break;
 
         	case 40: // down
         	//console.log("push down");
         	//console.log(direction);
-        	if(direction == 2){
+        	if(lastDirection == 2){
        			direction = 3;
-       			player.directions[0] = direction;
+       			//player.directions[0] = direction;
        		}
-       		if(direction == 0){
+       		if(lastDirection == 0){
        			direction = 3;
-       			player.directions[0] = direction;
+       			//player.directions[0] = direction;
        		}
         	break;
 
@@ -682,19 +695,3 @@
     		e.preventDefault(); // prevent the default action (scroll / move caret)
     		
 		});
-
-	</script> -->
-	
-</head>
-<body>
-	<h1 align="center">New Project Page</h1>
-	<h2 align="center" id="score">Score: 0</h2>
-	<h2 align="center" id="gameStatus">Playing the game!</h2>
-	<div id="gameBoard" class="gameBackground">
-	</div>
-	<form id="mturk_form" action="https://workersandbox.mturk.com/mturk/externalSubmit" method="POST">
-		<input type="hidden" name="score" id="scoreField">
-	</form>
-	<script src ="untitled.js"></script>
-</body>
-</html>
