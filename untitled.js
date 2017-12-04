@@ -40,6 +40,7 @@
 
 
 		var scoreText = $("#score");
+		var gameStartStatus = $("#gameStartStatus");
 		var pause = true;
 		//classic snake game
 		var speed = 2000;
@@ -120,11 +121,13 @@
 			obstacleGrid[food1GridY][food1GridX] = 0;
 			obstacleGrid[food2GridY][food2GridX] = 0;
 
-			$("#gameStatus").html("Playin the game, reach the score of " + gameLimit + " to get HIT reward.\n Reach the score of " + bonusLimit + " to get maximum bonus!");
+			$("#gameStatus").html("Reach the score of " + gameLimit + " to get HIT reward.\n Reach the score of " + bonusLimit + " to get maximum bonus!");
 
 			$("#scoreField").val(0);
 
 			$("#score").html("Score: 0");
+
+			gameStartStatus.html = "Waiting for the players";
 
 			var found = false;
 			var posX;
@@ -197,7 +200,11 @@
 			}
 		});
 
-		var reqTimer = setInterval(function(){ 
+		var reqTimer = setInterval(function(){
+			var dataInput = direction.toString() + pause.toString();
+			if(gameOver || tryAgain || readyToSubmit){
+				dataInput = direction.toString() + pause.toString() + "end";
+			}
 			//alert("Hello");
 			$.ajax({
             url:"https://codingthecrowd.com/counter.php",
@@ -213,6 +220,10 @@
  			for(var i = 0; i < results.count; i++){
  				if(results[i].length == 6){
  					everbodyPaused = false;
+ 				}else if(results[i].length == 8 || results[i].length == 9){
+ 					pause = true;
+ 					gameOver = true;
+ 					console.log("game ended because other player crashed");
  				}
  			}
  			if(count >= 2 && everbodyPaused && pause && !readyToStart){
@@ -256,6 +267,7 @@
 		}
 
 		function gameStart(seconds){
+			gameStartStatus.html( "Game is going to start in " + seconds + " seconds!");
 			setTimeout(function(){pause = false;
 				StartTheMovement();
 			}, seconds*1000);
@@ -292,9 +304,11 @@
 		  }
 
 
-			$("#gameStatus").html("Playin the game, reach the score of " + gameLimit + " to get HIT reward.\n Reach the score of " + bonusLimit + " to get maximum bonus!");
+			$("#gameStatus").html("Reach the score of " + gameLimit + " to get HIT reward.\n Reach the score of " + bonusLimit + " to get maximum bonus!");
 
 			$("#scoreField").val(0);
+
+			gameStartStatus.html("Waiting for other players!");
 
 			//create obstacles
 			if(mapNumber == 0){
@@ -390,6 +404,7 @@
 
 			//Movement function will be copied for every elements
 			function StartTheMovement(){
+				gameStartStatus.html( "Game is starting!");
 			myTimer = setInterval(function(){
 			//0 -> right
 			//1 -> up
