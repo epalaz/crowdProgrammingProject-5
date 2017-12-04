@@ -113,6 +113,8 @@
 		var foodYList = [9,4,13,2,19,5,14,5,10,13,19];
 		var foodCount = 0;
 
+		var mediator = true;
+
 		function resetGame(){
 			score = 3;
 			direction = 3;
@@ -238,11 +240,20 @@
  					directions[parseInt(json.results[k].data[0])]++;
  				}
  				
+ 				if(mediator){
  				 //averageDirection = 0;
+ 				
  				for(var j = 0; j < 4; j++){
  					if(directions[averageDirection] < directions[j]){
  						averageDirection = j;
  					}
+ 				}
+ 				}else{
+ 					for(var j = 0; j < 4; j++){
+ 					if(directions[averageDirection] <= directions[j]){
+ 						averageDirection = j;
+ 					}
+ 				}	
  				}
  				//console.log(averageDirection);
  			}
